@@ -67,8 +67,8 @@ mongoose
       console.log(`http://localhost:${PORT}${server.graphqlPath}`)
     })
   })
-  .catch(() => {
-    console.log('error connecting to DB')
+  .catch((e) => {
+    console.log(`error connecting to DB: ${e}`)
   })
 
 module.exports = app
