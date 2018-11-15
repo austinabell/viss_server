@@ -23,6 +23,7 @@ export default {
 
       await Joi.validate(args, SignUp, { abortEarly: false })
       return User.create(args)
-    }
+    },
+    login: (root, args, context, info) => {}
   }
 }
