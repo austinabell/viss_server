@@ -2,6 +2,7 @@ import { ApolloServer } from 'apollo-server-express'
 import express, { json, urlencoded } from 'express'
 import createError from 'http-errors'
 import logger from 'morgan'
+import jwt from 'jsonwebtoken'
 import {
   PORT,
   IN_PROD,
@@ -10,7 +11,8 @@ import {
   DB_PASSWORD,
   DB_HOST,
   DB_PORT,
-  DB_NAME
+  DB_NAME,
+  SECRET
 } from './config'
 import mongoose from 'mongoose'
 import cors from 'cors'
@@ -23,6 +25,20 @@ const indexRouter = require('./routes/index')
 
 const app = express()
 
+const addUserId = async (req) => {
+  const token = req.headers.authorization
+  if (token) {
+    try {
+      const { id } = await jwt.verify(token, SECRET)
+      req.id = id
+    } catch (err) {
+      console.log(err)
+    }
+  }
+  req.next()
+}
+app.use(addUserId)
+
 app.disable('x-powered-by')
 app.use(logger('dev'))
 app.use(json())
@@ -32,7 +48,10 @@ app.use(cors())
 const server = new ApolloServer({
   typeDefs,
   resolvers,
-  playground: !IN_PROD
+  playground: !IN_PROD,
+  context: ({ req }) => ({
+    id: req.id
+  })
 })
 
 server.applyMiddleware({ app })
@@ -71,4 +90,4 @@ mongoose
     console.log(`error connecting to DB: ${e}`)
   })
 
-module.exports = app
+module.exports = { app, server }

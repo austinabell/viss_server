@@ -1,5 +1,5 @@
+const { app } = require('../')
 const request = require('supertest')
-const app = require('../')
 // const assert = require('assert')
 
 /* global describe, it */
