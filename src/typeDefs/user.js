@@ -1,4 +1,4 @@
-import { gql } from 'apollo-server-express'
+import { gql } from "apollo-server-express";
 
 export default gql`
   extend type Query {
@@ -14,10 +14,7 @@ export default gql`
       name: String!
       password: String!
     ): User
-    login(
-      email: String!,
-      password: String!
-    ): String!
+    login(email: String!, password: String!): String!
   }
 
   type User {
@@ -35,4 +32,4 @@ export default gql`
     lat: Float
     time: String
   }
-`
+`;
