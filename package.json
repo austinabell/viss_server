@@ -9,8 +9,9 @@
   },
   "license": "MIT",
   "dependencies": {
-    "apollo-server-express": "^2.1.0",
+    "apollo-server-express": "^2.2.2",
     "bcryptjs": "^2.4.3",
+    "connect-redis": "^3.4.0",
     "cors": "^2.8.4",
     "esm": "^3.0.84",
     "express": "^4.16.4",

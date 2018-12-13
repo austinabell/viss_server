@@ -1,64 +1,66 @@
 import { UserInputError } from "apollo-server-express";
 import mongoose from "mongoose";
 import Joi from "joi";
-import { compare } from "bcryptjs";
-import jwt from "jsonwebtoken";
 
+import * as Auth from "../services/auth";
 import { User } from "../models";
-import { signUp } from "../schemas";
-import { SECRET } from "../config";
+import { signUp, login } from "../schemas";
 
 export default {
   Query: {
-    users: (root, args, context, info) => {
-      return User.find({});
+    me: (root, args, { req }) => {
+      // TODO: projection
+      Auth.checkSignedIn(req);
+
+      return User.findById(req.session.userId);
     },
-    user: (root, { id }, context, info) => {
-      if (!mongoose.Types.ObjectId.isValid(id)) {
-        throw new UserInputError(`${id} is not a valid user ID.`);
+    users: (root, args, { req }) => {
+      const { userId } = req.session;
+
+      if (userId) {
+        return User.find({});
+      } else return null; // Change else return statement
+    },
+    user: (root, { req }) => {
+      Auth.checkSignedIn(req);
+
+      if (!mongoose.Types.ObjectId.isValid(req.id)) {
+        throw new UserInputError(`${req.id} is not a valid user ID.`);
       }
 
-      return User.findById(id);
-    },
-    me: (root, args, { id }) => {
-      if (id) {
-        return User.findById(id);
-      }
-      // Not logged in
-      return null;
+      return User.findById(req.id);
     }
   },
   Mutation: {
-    signUp: async (root, args, context, info) => {
-      // TODO: Authentication
+    signUp: async (root, args, { req }) => {
+      Auth.checkSignedOut(req);
 
       await Joi.validate(args, signUp, { abortEarly: false });
       const user = await User.create(args);
 
+      req.session.userId = user.id;
+
       return user;
     },
-    login: async (root, { email, password }, context, info) => {
-      const user = await User.findOne({ email });
-      if (!user) {
-        throw new Error("No user with that email");
+    login: async (root, args, { req }) => {
+      const { userId } = req.session;
+
+      if (userId) {
+        return User.findById(userId);
       }
 
-      const valid = await compare(password, user.password);
-      if (!valid) {
-        throw new Error("Incorrect password");
-      }
+      await Joi.validate(args, login, { abortEarly: false });
 
-      const token = jwt.sign(
-        {
-          id: user.id,
-          username: user.username
-        },
-        SECRET,
-        {
-          expiresIn: "1y"
-        }
-      );
-      return token;
+      const user = await Auth.attemptSignIn(args.email, args.password);
+
+      req.session.userId = user.id;
+
+      return user;
+    },
+    logout: (root, args, { req, res }) => {
+      Auth.checkSignedIn(req);
+
+      return Auth.signOut(req, res);
     }
   }
 };
