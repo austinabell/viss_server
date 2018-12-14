@@ -85,7 +85,6 @@ const server = new ApolloServer({
   resolvers,
   playground: IN_PROD ? false : { "request.credentials": "include" },
   context: ({ req, res }) => ({
-    id: req.id,
     req,
     res
   })

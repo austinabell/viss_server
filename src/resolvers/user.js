@@ -21,14 +21,14 @@ export default {
         return User.find({});
       } else return null; // Change else return statement
     },
-    user: (root, { req }) => {
+    user: (root, { id }, { req }) => {
       Auth.checkSignedIn(req);
 
-      if (!mongoose.Types.ObjectId.isValid(req.id)) {
-        throw new UserInputError(`${req.id} is not a valid user ID.`);
+      if (!mongoose.Types.ObjectId.isValid(id)) {
+        throw new UserInputError(`${id} is not a valid user ID.`);
       }
 
-      return User.findById(req.id);
+      return User.findById(id);
     }
   },
   Mutation: {

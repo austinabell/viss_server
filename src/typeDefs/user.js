@@ -24,7 +24,7 @@ export default gql`
     username: String!
     name: String!
     currentLocation: Location
-    isStarted: Boolean!
+    isStarted: Boolean
     createdAt: String!
   }
 
