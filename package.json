@@ -4,7 +4,7 @@
   "main": "src/index.js",
   "scripts": {
     "start": "node -r esm .",
-    "dev": "NODE_ENV=development nodemon -r esm .",
+    "dev": "eval $(cat .env) NODE_ENV=development nodemon -r esm .",
     "test": "mocha -r esm --exit test"
   },
   "license": "MIT",
