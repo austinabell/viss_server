@@ -1,12 +1,14 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable no-undef */
-const chai = require("chai");
+import { expect } from "chai";
 
-const expect = chai.expect;
+// const expect = _expect;
 const url = "http://localhost:5000";
 const request = require("supertest")(url);
 
-describe("User model", () => {
+describe("User model", function() {
+  this.timeout(15000);
+
   let cookie = "";
   it("Create user", (done) => {
     request
@@ -20,10 +22,6 @@ describe("User model", () => {
         // res will contain array with one user
         if (err) return done(err);
         
-        // res.body.data.signUp.should.have.property("id");
-        // res.body.user.should.have.property("email");
-        // res.body.user.should.have.property("name");
-
         cookie = res.headers["set-cookie"];
         done();
       });
@@ -41,8 +39,27 @@ describe("User model", () => {
         if (res.headers["set-cookie"]){
           cookie = res.headers["set-cookie"];
         }
-        // res.body.data.login.should.have.property("id");
-        // res.body.data.login.should.have.property("name");
+
+        expect(res.body.data.login).to.have.property("id");
+        expect(res.body.data.login).to.have.property("name");
+        done();
+      });
+  });
+
+  it("Gets the logged in user's data", (done) => {
+    request
+      .post("/graphql")
+      .send({ query: "{ me { id, name, username, email } }" })
+      .set({ "cookie": cookie })
+      .expect(200)
+      .end((err, res) => {
+        // res will contain array of all users
+        if (err) return done(err);
+
+        expect(res.body.data.me).to.have.property("id");
+        expect(res.body.data.me).to.have.property("name");
+        expect(res.body.data.me).to.have.property("username");
+        expect(res.body.data.me).to.have.property("email");
         done();
       });
   });
