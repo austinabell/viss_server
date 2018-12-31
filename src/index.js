@@ -27,7 +27,6 @@ import typeDefs from "./typeDefs";
 import resolvers from "./resolvers";
 
 const indexRouter = require("./routes/index");
-// const partyRouter = require("./routes/partyRoute");
 
 const app = express();
 
@@ -41,6 +40,7 @@ const store = new RedisStore({
   password: REDIS_PW
 });
 
+// Session setup for redis login caching
 app.use(
   session({
     store,
@@ -51,7 +51,7 @@ app.use(
     cookie: {
       maxAge: SESS_LIFETIME,
       sameSite: true,
-      // secure: IN_PROD
+      // secure: IN_PROD // Use when cookie setting isn't done manually
     }
   })
 );
@@ -62,6 +62,7 @@ app.use(json());
 app.use(urlencoded({ extended: false }));
 app.use(cors());
 
+// Setting up Apollo server
 const server = new ApolloServer({
   typeDefs,
   resolvers,
@@ -85,7 +86,6 @@ mongoose
   )
   .then(() => {
     app.use("/", indexRouter);
-    // app.use("/parties", partyRouter);
 
     // catch 404 and forward to error handler
     app.use(function(req, res, next) {
