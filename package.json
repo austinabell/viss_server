@@ -5,7 +5,7 @@
   "scripts": {
     "start": "node -r esm .",
     "dev": "eval $(cat .env) NODE_ENV=development nodemon -r esm .",
-    "test": "eval $(cat .env) mocha -r esm --exit test"
+    "test": "eval $(cat .env) NODE_ENV=development PORT=5001 mocha -r esm --exit test"
   },
   "license": "MIT",
   "dependencies": {
