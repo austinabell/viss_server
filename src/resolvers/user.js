@@ -64,24 +64,11 @@ export default {
     },
     deleteAccount: async (root, args, { req }) => {
       Auth.checkSignedIn(req);
-      try {
-        let user;
-        await User.findOneAndDelete({ _id: req.session.userId }, function(
-          err,
-          offer
-        ) {
-          if (err) {
-            console.log("error in deleting user from database: " + err);
-          } else {
-            user = offer;
-          }
-        });
-        if (user) {
-          return true;
-        } else {
-          return false;
-        }
-      } catch (e) {
+
+      const user = await User.findOneAndDelete({ _id: req.session.userId });
+      if (user) {
+        return true;
+      } else {
         return false;
       }
     }
