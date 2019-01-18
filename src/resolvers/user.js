@@ -25,7 +25,7 @@ export default {
       Auth.checkSignedIn(req);
 
       if (!mongoose.Types.ObjectId.isValid(id)) {
-        throw new UserInputError(`${id} is not a valid user ID.`);
+        throw new UserInputError("User id is not a valid user ID.");
       }
 
       return User.findById(id);

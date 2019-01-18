@@ -21,7 +21,9 @@ export default gql`
     name: String
     currentLocation: Location
     isStarted: Boolean
+    tasks: [Task!]!
     createdAt: String!
+    updatedAt: String!
   }
 
   type Location {
