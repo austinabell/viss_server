@@ -16,20 +16,29 @@ describe("User model", function() {
     await startServer();
   });
 
-  const email = "testing123@gmail.com";
-  const password = "Testing123";
+  const email = "testing12345@gmail.com";
+  const password = "Testing12345";
+  const username = "testingUsername12345";
 
   let cookie = "";
   it("Create user", (done) => {
     request
       .post("/graphql")
       .send({
-        query: `mutation { signUp(email: "${email}", password: "${password}") { id, email, name }}`
+        query: `mutation { 
+          signUp(
+            email: "${email}", 
+            password: "${password}", 
+            username: "${username}") { 
+            id, email, name 
+          }
+        }`
       })
       .expect(200)
       .end((err, res) => {
         if (err) return done(err);
-
+        console.log(res.body.errors);
+        expect(res.body.errors).to.eq(undefined);
         done();
       });
   });

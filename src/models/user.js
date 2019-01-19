@@ -48,4 +48,6 @@ userSchema.methods.matchesPassword = function(password) {
   return compare(password, this.password);
 };
 
-export default mongoose.model("User", userSchema);
+const User = mongoose.model("User", userSchema);
+
+export default User;
