@@ -83,10 +83,9 @@ export const startServer = async () => {
   await mongoose
     .connect(
       mongoUrl,
-      { useNewUrlParser: true }
+      { useCreateIndex: true, useNewUrlParser: true }
     )
     .then(() => {
-
       app.use("/", indexRouter);
 
       // catch 404 and forward to error handler

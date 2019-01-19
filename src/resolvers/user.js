@@ -6,10 +6,10 @@ import * as Auth from "../services/auth";
 import { User } from "../models";
 import { signUp, login } from "../schemas";
 
+// Cannot request tasks from any user query or mutation unless changed
 export default {
   Query: {
     me: (root, args, { req }) => {
-      // TODO: projection
       Auth.checkSignedIn(req);
 
       return User.findById(req.session.userId);

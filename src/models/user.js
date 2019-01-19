@@ -1,21 +1,23 @@
 import mongoose, { Schema } from "mongoose";
 import { hash, compare } from "bcryptjs";
 
-const userSchema = new mongoose.Schema(
+const userSchema = new Schema(
   {
     email: {
       type: String,
-      validate: {
-        validator: (email) => User.doesntExist({ email }),
-        message: () => "Email has already been taken"
-      }
+      unique: true
+      // validate: {
+      //   validator: (email) => User.doesntExist({ email }),
+      //   message: () => "Email has already been taken"
+      // }
     },
     username: {
       type: String,
-      validate: {
-        validator: (username) => User.doesntExist({ username }),
-        message: () => "Username has already been taken"
-      }
+      unique: true
+      // validate: {
+      //   validator: (username) => User.doesntExist({ username }),
+      //   message: () => "Username has already been taken"
+      // }
     },
     tasks: [
       {
@@ -46,6 +48,4 @@ userSchema.methods.matchesPassword = function(password) {
   return compare(password, this.password);
 };
 
-const User = mongoose.model("User", userSchema);
-
-export default User;
+export default mongoose.model("User", userSchema);
