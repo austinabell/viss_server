@@ -16,10 +16,11 @@ export default gql`
       isAllDay: Boolean
       windowStart: String
       windowEnd: String
-      duration: Int
+      duration: Int!
       notes: String
     ): Task
     updateTask(
+      id: ID!
       address: String
       city: String
       province: String
@@ -32,7 +33,7 @@ export default gql`
       duration: Int
       notes: String
     ): Task
-    deleteTask: Boolean
+    deleteTask(id: ID!): Boolean
   }
 
   type Task {

@@ -62,11 +62,12 @@ export default {
 
       return Auth.signOut(req, res);
     },
-    deleteAccount: async (root, args, { req }) => {
+    deleteAccount: async (root, args, { req, res }) => {
       Auth.checkSignedIn(req);
 
       const user = await User.findOneAndDelete({ _id: req.session.userId });
       if (user) {
+        Auth.signOut(req, res);
         return true;
       } else {
         return false;
