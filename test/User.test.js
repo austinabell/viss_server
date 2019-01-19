@@ -18,7 +18,6 @@ describe("User model", function() {
 
   const email = "testing12345@gmail.com";
   const password = "Testing12345";
-  const username = "testingUsername12345";
 
   let cookie = "";
   it("Create user", (done) => {
@@ -28,8 +27,7 @@ describe("User model", function() {
         query: `mutation { 
           signUp(
             email: "${email}", 
-            password: "${password}", 
-            username: "${username}") { 
+            password: "${password}") { 
             id, email, name 
           }
         }`
@@ -37,7 +35,6 @@ describe("User model", function() {
       .expect(200)
       .end((err, res) => {
         if (err) return done(err);
-        console.log(res.body.errors);
         expect(res.body.errors).to.eq(undefined);
         done();
       });
@@ -76,7 +73,7 @@ describe("User model", function() {
   it("Gets the logged in user's data", (done) => {
     request
       .post("/graphql")
-      .send({ query: "{ me { id, name, username, email } }" })
+      .send({ query: "{ me { id, name, email } }" })
       .set({ cookie })
       .expect(200)
       .end((err, res) => {
@@ -84,7 +81,6 @@ describe("User model", function() {
 
         expect(res.body.data.me).to.have.property("id");
         expect(res.body.data.me).to.have.property("name");
-        expect(res.body.data.me).to.have.property("username");
         expect(res.body.data.me).to.have.property("email");
         done();
       });

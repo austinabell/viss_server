@@ -13,7 +13,7 @@ const userSchema = new Schema(
     },
     username: {
       type: String,
-      unique: true
+      // unique: true
       // validate: {
       //   validator: (username) => User.doesntExist({ username }),
       //   message: () => "Username has already been taken"
