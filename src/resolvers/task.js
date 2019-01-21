@@ -10,7 +10,9 @@ export default {
     myTasks: async (root, args, { req }) => {
       Auth.checkSignedIn(req);
 
-      const today = moment().startOf("day");
+      const today = moment()
+        .utc()
+        .startOf("day");
 
       // Find user and join with tasks
       const user = await User.findOne({ _id: req.session.userId })
@@ -19,10 +21,11 @@ export default {
           match: {
             windowStart: {
               $lte: moment(today)
+                .utc()
                 .endOf("day")
                 .toDate()
             },
-            windowEnd: { $gte: today.toDate() }
+            windowEnd: { $gte: today.utc().toDate() }
           }
         })
         .exec();
