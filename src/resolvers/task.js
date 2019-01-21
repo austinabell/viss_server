@@ -22,7 +22,7 @@ export default {
                 .endOf("day")
                 .toDate()
             },
-            // windowEnd: { $gte: today.toDate() }
+            windowEnd: { $gte: today.toDate() }
           }
         })
         .exec();
