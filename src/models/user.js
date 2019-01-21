@@ -1,22 +1,30 @@
-import mongoose from "mongoose";
+import mongoose, { Schema } from "mongoose";
 import { hash, compare } from "bcryptjs";
 
-const userSchema = new mongoose.Schema(
+const userSchema = new Schema(
   {
     email: {
       type: String,
-      validate: {
-        validator: (email) => User.doesntExist({ email }),
-        message: ({ value }) => `Email ${value} has already been taken` // TODO: Security
-      }
+      unique: true
+      // validate: {
+      //   validator: (email) => User.doesntExist({ email }),
+      //   message: () => "Email has already been taken"
+      // }
     },
     username: {
       type: String,
-      validate: {
-        validator: (username) => User.doesntExist({ username }),
-        message: ({ value }) => `Username ${value} has already been taken` // TODO: Security
-      }
+      // unique: true
+      // validate: {
+      //   validator: (username) => User.doesntExist({ username }),
+      //   message: () => "Username has already been taken"
+      // }
     },
+    tasks: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "Task"
+      }
+    ],
     name: String,
     password: String
   },
@@ -25,6 +33,7 @@ const userSchema = new mongoose.Schema(
   }
 );
 
+// Function so hash password on save
 userSchema.pre("save", async function() {
   if (this.isModified("password")) {
     this.password = await hash(this.password, 10);

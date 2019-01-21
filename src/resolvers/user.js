@@ -6,10 +6,10 @@ import * as Auth from "../services/auth";
 import { User } from "../models";
 import { signUp, login } from "../schemas";
 
+// Cannot request tasks from any user query or mutation unless changed
 export default {
   Query: {
     me: (root, args, { req }) => {
-      // TODO: projection
       Auth.checkSignedIn(req);
 
       return User.findById(req.session.userId);
@@ -25,7 +25,7 @@ export default {
       Auth.checkSignedIn(req);
 
       if (!mongoose.Types.ObjectId.isValid(id)) {
-        throw new UserInputError(`${id} is not a valid user ID.`);
+        throw new UserInputError("User id is not a valid user ID.");
       }
 
       return User.findById(id);
@@ -61,6 +61,17 @@ export default {
       Auth.checkSignedIn(req);
 
       return Auth.signOut(req, res);
+    },
+    deleteAccount: async (root, args, { req, res }) => {
+      Auth.checkSignedIn(req);
+
+      const user = await User.findOneAndDelete({ _id: req.session.userId });
+      if (user) {
+        Auth.signOut(req, res);
+        return true;
+      } else {
+        return false;
+      }
     }
   }
 };

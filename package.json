@@ -5,7 +5,7 @@
   "scripts": {
     "start": "node -r esm .",
     "dev": "eval $(cat .env) NODE_ENV=development nodemon -r esm .",
-    "test": "mocha -r esm --exit test"
+    "test": "eval $(cat .env) NODE_ENV=development PORT=5001 mocha -r esm --exit test"
   },
   "license": "MIT",
   "dependencies": {
@@ -21,11 +21,13 @@
     "http-errors": "^1.7.1",
     "joi": "^14.0.6",
     "jsonwebtoken": "^8.4.0",
+    "moment": "^2.23.0",
     "mongodb": "^3.1.8",
-    "mongoose": "^5.3.7",
+    "mongoose": "^5.4.5",
     "morgan": "^1.9.1"
   },
   "devDependencies": {
+    "chai": "^4.2.0",
     "mocha": "^5.2.0",
     "nodemon": "^1.18.9",
     "supertest": "^3.3.0"

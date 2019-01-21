@@ -8,24 +8,22 @@ export default gql`
   }
 
   extend type Mutation {
-    signUp(
-      email: String!
-      username: String!
-      name: String!
-      password: String!
-    ): User
-    login(email: String!, password: String!): User,
+    signUp(email: String!, password: String!): User
+    login(email: String!, password: String!): User
     logout: Boolean
+    deleteAccount: Boolean
   }
 
   type User {
     id: ID!
     email: String!
-    username: String!
-    name: String!
+    username: String
+    name: String
     currentLocation: Location
     isStarted: Boolean
+    tasks: [Task!]!
     createdAt: String!
+    updatedAt: String!
   }
 
   type Location {
