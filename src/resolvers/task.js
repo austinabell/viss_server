@@ -1,7 +1,8 @@
-// import Joi from "joi"; // TODO: Add validation to data being stored
+import Joi from "joi";
 
 import * as Auth from "../services/auth";
 import { User, Task } from "../models";
+import { createTask } from "../schemas";
 // import { transformSchema } from "graphql-tools";
 
 export default {
@@ -20,6 +21,8 @@ export default {
     createTask: async (root, args, { req }) => {
       Auth.checkSignedIn(req);
 
+      await Joi.validate(args, createTask, { abortEarly: false });
+
       // Validate here
       // Created objects here
       // const task = new Task(args);
@@ -33,7 +36,7 @@ export default {
         await user.save();
         await task.save();
       } else {
-        return "Task couldnt be created";
+        throw Error("Task could not be created");
       }
 
       return task;
