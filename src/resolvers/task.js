@@ -3,16 +3,29 @@ import Joi from "joi";
 import * as Auth from "../services/auth";
 import { User, Task } from "../models";
 import { createTask } from "../schemas";
-// import { transformSchema } from "graphql-tools";
+import moment from "moment";
 
 export default {
   Query: {
     myTasks: async (root, args, { req }) => {
       Auth.checkSignedIn(req);
 
-      const user = await User.findOne({ _id: req.session.userId }).populate(
-        "tasks"
-      );
+      const today = moment().startOf("day");
+
+      // Find user and join with tasks
+      const user = await User.findOne({ _id: req.session.userId })
+        .populate({
+          path: "tasks",
+          match: {
+            windowStart: {
+              $lte: moment(today)
+                .endOf("day")
+                .toDate()
+            },
+            windowEnd: { $gte: today.toDate() }
+          }
+        })
+        .exec();
 
       return user.tasks;
     }
@@ -21,9 +34,9 @@ export default {
     createTask: async (root, args, { req }) => {
       Auth.checkSignedIn(req);
 
+      // Validate input
       await Joi.validate(args, createTask, { abortEarly: false });
 
-      // Validate here
       // Created objects here
       // const task = new Task(args);
       const task = await Task.create(args);
@@ -44,6 +57,7 @@ export default {
     updateTask: async (root, args, { req }) => {
       Auth.checkSignedIn(req);
 
+      // Find task and join to get all technicians assigned
       const task = await Task.findOne({ _id: args.id }).populate({
         path: "technicians"
         // select: "_id"
@@ -69,6 +83,7 @@ export default {
     deleteTask: async (root, args, { req }) => {
       Auth.checkSignedIn(req);
 
+      // Find task and join with technicians to ensure they can update it
       const task = await Task.findOne({ _id: args.id }).populate({
         path: "technicians",
         select: "_id"
@@ -79,6 +94,7 @@ export default {
           task.technicians.some((t) => t._id.toString() === req.session.userId)
         ) {
           await Task.findOneAndDelete({ _id: args.id });
+          // ? Remove task from user list when deleting
           return true;
         } else {
           throw Error("You do not have permission to delete this task");
