@@ -7,12 +7,22 @@ import moment from "moment";
 
 export default {
   Query: {
-    myTasks: async (root, args, { req }) => {
+    myTasks: async (root, { timeZone }, { req }) => {
       Auth.checkSignedIn(req);
 
       const today = moment()
         .utc()
         .startOf("day");
+
+      const endOfDay = moment(today)
+        .utc()
+        .endOf("day");
+
+      if (timeZone) {
+        // Adjust for time zone in request
+        today.add(timeZone, "hours");
+        endOfDay.add(timeZone, "hours");
+      }
 
       // Find user and join with tasks
       const user = await User.findOne({ _id: req.session.userId })
@@ -20,10 +30,7 @@ export default {
           path: "tasks",
           match: {
             windowStart: {
-              $lte: moment(today)
-                .utc()
-                .endOf("day")
-                .toDate()
+              $lte: endOfDay.utc().toDate()
             },
             windowEnd: { $gte: today.utc().toDate() }
           }
