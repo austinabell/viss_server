@@ -11,8 +11,14 @@ export default {
       Auth.checkSignedIn(req);
 
       const today = moment()
-        .utc()
-        .startOf("day");
+        .utc();
+
+      if (timeZone) {
+        // Get current date based on timezone
+        today.add(timeZone, "hours");
+      }
+
+      today.startOf("day");
 
       const endOfDay = moment(today)
         .utc()
@@ -30,9 +36,9 @@ export default {
           path: "tasks",
           match: {
             windowStart: {
-              $lte: endOfDay.utc().toDate()
+              $lte: endOfDay.toDate()
             },
-            windowEnd: { $gte: today.utc().toDate() }
+            windowEnd: { $gte: today.toDate() }
           }
         })
         .exec();
