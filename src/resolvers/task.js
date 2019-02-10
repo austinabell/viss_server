@@ -10,8 +10,7 @@ export default {
     myTasks: async (root, { timeZone }, { req }) => {
       Auth.checkSignedIn(req);
 
-      const today = moment()
-        .utc();
+      const today = moment().utc();
 
       if (timeZone) {
         // Get current date based on timezone
@@ -26,8 +25,8 @@ export default {
 
       if (timeZone) {
         // Adjust for time zone in request
-        today.add(timeZone, "hours");
-        endOfDay.add(timeZone, "hours");
+        today.subtract(timeZone, "hours");
+        endOfDay.subtract(timeZone, "hours");
       }
 
       // Find user and join with tasks
