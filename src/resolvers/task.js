@@ -49,6 +49,14 @@ export default {
     createTask: async (root, args, { req }) => {
       Auth.checkSignedIn(req);
 
+      
+      // Default to current time and all day if window time isn't passed
+      if (args.windowStart == null || args.windowEnd == null) {
+        args.windowStart = moment().toISOString();
+        args.windowEnd = moment().toISOString();
+        args.isAllDay = true;
+      }
+      
       // Validate input
       await Joi.validate(args, createTask, { abortEarly: false });
 
