@@ -1,6 +1,8 @@
 import Joi from "joi";
 
 export const createTask = Joi.object().keys({
+  name: Joi.any(),
+  order: Joi.any(),
   address: Joi.string()
     .required()
     .min(4)
