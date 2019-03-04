@@ -2,6 +2,8 @@ import mongoose, { Schema } from "mongoose";
 
 const taskSchema = new Schema(
   {
+    name: String,
+    order: Number,
     address: String,
     city: String,
     province: String,

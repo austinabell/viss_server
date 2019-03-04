@@ -7,12 +7,27 @@ import moment from "moment";
 
 export default {
   Query: {
-    myTasks: async (root, args, { req }) => {
+    myTasks: async (root, { timeZone }, { req }) => {
       Auth.checkSignedIn(req);
 
-      const today = moment()
+      const today = moment().utc();
+
+      if (timeZone) {
+        // Get current date based on timezone
+        today.add(timeZone, "hours");
+      }
+
+      today.startOf("day");
+
+      const endOfDay = moment(today)
         .utc()
-        .startOf("day");
+        .endOf("day");
+
+      if (timeZone) {
+        // Adjust for time zone in request
+        today.subtract(timeZone, "hours");
+        endOfDay.subtract(timeZone, "hours");
+      }
 
       // Find user and join with tasks
       const user = await User.findOne({ _id: req.session.userId })
@@ -20,12 +35,9 @@ export default {
           path: "tasks",
           match: {
             windowStart: {
-              $lte: moment(today)
-                .utc()
-                .endOf("day")
-                .toDate()
+              $lte: endOfDay.toDate()
             },
-            windowEnd: { $gte: today.utc().toDate() }
+            windowEnd: { $gte: today.toDate() }
           }
         })
         .exec();
@@ -36,6 +48,13 @@ export default {
   Mutation: {
     createTask: async (root, args, { req }) => {
       Auth.checkSignedIn(req);
+
+      // Default to current time and all day if window time isn't passed
+      if (args.windowStart == null || args.windowEnd == null) {
+        args.windowStart = moment().toISOString();
+        args.windowEnd = moment().toISOString();
+        args.isAllDay = true;
+      }
 
       // Validate input
       await Joi.validate(args, createTask, { abortEarly: false });
@@ -82,6 +101,12 @@ export default {
       }
 
       return task;
+    },
+    updateTaskOrder: async (root, args, { req }) => {
+      Auth.checkSignedIn(req);
+
+      return "Not implemented";
+
     },
     deleteTask: async (root, args, { req }) => {
       Auth.checkSignedIn(req);
