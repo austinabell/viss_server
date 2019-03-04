@@ -38,8 +38,8 @@ export default {
               $lte: endOfDay.toDate()
             },
             windowEnd: { $gte: today.toDate() },
-            options: { sort: { order: 1, isAllDay: 1, windowEnd: 1 } }
-          }
+          },
+          options: { sort: { "order": -1, "isAllDay": 1, "windowEnd": 1 } }
         })
         .exec();
 
@@ -103,10 +103,19 @@ export default {
 
       return task;
     },
-    updateTaskOrder: async (root, args, { req }) => {
+    updateTaskOrder: async (root, { ids }, { req }) => {
       Auth.checkSignedIn(req);
 
-      return "Not implemented";
+      for (let i = 0; i < ids.length; i++) {
+        const task = await Task.findOne({ _id: ids[i] });
+
+        if (task) {
+          Object.assign(task, { order: ids.length - i });
+          task.save();
+        }
+      }
+
+      return true;
     },
     deleteTask: async (root, args, { req }) => {
       Auth.checkSignedIn(req);

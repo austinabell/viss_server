@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 import Joi from "joi";
 
 import * as Auth from "../services/auth";
-import { User } from "../models";
+import { User, Location } from "../models";
 import { signUp, login } from "../schemas";
 
 // Cannot request tasks from any user query or mutation unless changed
@@ -72,6 +72,30 @@ export default {
       } else {
         return false;
       }
+    },
+    updateUser: async (root, args, { req }) => {
+      Auth.checkSignedIn(req);
+
+      const { lat, lng } = args;
+
+      const user = await User.findOne({ _id: req.session.userId });
+
+      // Handle location setting
+      if (lat && lng) {
+        const location = await Location.create({
+          userId: req.session.userId,
+          lat,
+          lng
+        });
+        if (location) {
+          user.currentLocation = location;
+        }
+      }
+
+      Object.assign(user, args);
+      user.save();
+
+      return user;
     }
   }
 };

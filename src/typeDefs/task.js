@@ -38,7 +38,7 @@ export default gql`
     ): Task
     updateTaskOrder(
       ids: [ID!]!
-    ): String
+    ): Boolean
     deleteTask(id: ID!): Boolean
   }
 
