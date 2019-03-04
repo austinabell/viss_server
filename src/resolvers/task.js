@@ -37,7 +37,8 @@ export default {
             windowStart: {
               $lte: endOfDay.toDate()
             },
-            windowEnd: { $gte: today.toDate() }
+            windowEnd: { $gte: today.toDate() },
+            options: { sort: { order: 1, isAllDay: 1, windowEnd: 1 } }
           }
         })
         .exec();
@@ -106,7 +107,6 @@ export default {
       Auth.checkSignedIn(req);
 
       return "Not implemented";
-
     },
     deleteTask: async (root, args, { req }) => {
       Auth.checkSignedIn(req);
