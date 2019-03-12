@@ -37,13 +37,19 @@ export default {
             windowStart: {
               $lte: endOfDay.toDate()
             },
-            windowEnd: { $gte: today.toDate() },
+            windowEnd: { $gte: today.toDate() }
           },
-          options: { sort: { "order": -1, "isAllDay": 1, "windowEnd": 1 } }
+          options: { sort: { order: -1, isAllDay: 1, windowEnd: 1 } }
         })
         .exec();
 
       return user.tasks;
+    },
+    allTasks: async () => {
+      // ? Remember to remove this
+      return Task.find({})
+        .populate({ path: "technicians" })
+        .exec();
     }
   },
   Mutation: {

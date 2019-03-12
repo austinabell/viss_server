@@ -3,6 +3,8 @@ import { gql } from "apollo-server-express";
 export default gql`
   extend type Query {
     myTasks(timeZone: Int): [Task!]
+    allTasks: [Task!]
+    taskById(id: ID!): Task
   }
 
   extend type Mutation {
