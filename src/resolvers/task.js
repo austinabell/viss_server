@@ -43,13 +43,27 @@ export default {
         })
         .exec();
 
-      return user.tasks;
+      if (user) {
+        return user.tasks;
+      } else {
+        return null;
+      }
     },
     allTasks: async () => {
       // ? Remember to remove this
       return Task.find({})
         .populate({ path: "technicians" })
         .exec();
+    },
+    userTasks: async (root, { id }) => {
+      const user = await User.findOne({ _id: id })
+        .populate({
+          path: "tasks",
+          options: { sort: { windowEnd: 1 } }
+        })
+        .exec();
+
+      return user.tasks;
     }
   },
   Mutation: {

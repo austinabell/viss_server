@@ -14,12 +14,9 @@ export default {
 
       return User.findById(req.session.userId);
     },
-    users: (root, args, { req }) => {
-      const { userId } = req.session;
-
-      if (userId) {
-        return User.find({});
-      } else return null; // Change else return statement
+    users: async () => {
+      // ? Remember to remove this
+      return User.find({});
     },
     user: (root, { id }, { req }) => {
       Auth.checkSignedIn(req);

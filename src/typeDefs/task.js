@@ -5,6 +5,7 @@ export default gql`
     myTasks(timeZone: Int): [Task!]
     allTasks: [Task!]
     taskById(id: ID!): Task
+    userTasks(id: ID!): [Task!]
   }
 
   extend type Mutation {
