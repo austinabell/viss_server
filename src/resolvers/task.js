@@ -68,7 +68,7 @@ export default {
   },
   Mutation: {
     createTask: async (root, args, { req }) => {
-      Auth.checkSignedIn(req);
+      // Auth.checkSignedIn(req); // ? add this back later
 
       // Default to current time and all day if window time isn't passed
       if (args.windowStart == null || args.windowEnd == null) {
@@ -83,19 +83,31 @@ export default {
       // Created objects here
       // const task = new Task(args);
       const task = await Task.create(args);
-      const user = await User.findById(req.session.userId);
-      if (user && task) {
-        // Push object references to each
-        user.tasks.push(task);
-        task.technicians.push(user);
-        // Save objects to database
-        await user.save();
+      if (task) {
+        const user = await User.findById(req.session.userId);
+        if (!args.technicians && user) {
+          // Push object references to each
+          user.tasks.push(task);
+          task.technicians.push(user);
+          // Save objects to database
+          await user.save();
+        } else {
+          for (let i = 0; i < args.technicians.length; i++) {
+            const technician = await User.findById(args.technicians[i]);
+            technician.tasks.push(task);
+            await technician.save();
+          }
+        }
+
         await task.save();
       } else {
         throw Error("Task could not be created");
       }
 
-      return task;
+      return Task.findOne({ _id: task.id }).populate({
+        path: "technicians"
+        // select: "_id"
+      });
     },
     updateTask: async (root, args, { req }) => {
       Auth.checkSignedIn(req);

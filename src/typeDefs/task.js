@@ -22,6 +22,7 @@ export default gql`
       windowEnd: String
       duration: Int!
       notes: String
+      technicians: [ID!]
     ): Task
     updateTask(
       id: ID!
@@ -39,9 +40,7 @@ export default gql`
       duration: Int
       notes: String
     ): Task
-    updateTaskOrder(
-      ids: [ID!]!
-    ): Boolean
+    updateTaskOrder(ids: [ID!]!): Boolean
     deleteTask(id: ID!): Boolean
   }
 

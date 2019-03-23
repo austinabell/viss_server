@@ -26,5 +26,6 @@ export const createTask = Joi.object().keys({
     .min(0)
     .max(1440),
   notes: Joi.any(),
-  status: Joi.any()
+  status: Joi.any(),
+  technicians: Joi.any()
 });
