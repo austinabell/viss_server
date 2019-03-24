@@ -59,7 +59,10 @@ export default {
       const user = await User.findOne({ _id: id })
         .populate({
           path: "tasks",
-          options: { sort: { windowEnd: 1 } }
+          options: { sort: { windowEnd: 1 } },
+          populate: {
+            path: "technicians"
+          }
         })
         .exec();
 
@@ -109,8 +112,8 @@ export default {
         // select: "_id"
       });
     },
-    updateTask: async (root, args, { req }) => {
-      Auth.checkSignedIn(req);
+    updateTask: async (root, args) => {
+      // Auth.checkSignedIn(req); //? Add this back
 
       // Find task and join to get all technicians assigned
       const task = await Task.findOne({ _id: args.id }).populate({
@@ -118,8 +121,36 @@ export default {
         // select: "_id"
       });
 
+      // Map technician object array to string to match input
+      const taskTechnicianIds = task.technicians.map((tech) => tech.id);
+
+      // Remove user references to unassigned tasks
+      for (let i = 0; i < taskTechnicianIds.length; i++) {
+        if (args.technicians.indexOf(taskTechnicianIds[i]) === -1) {
+          const technician = await User.findById(taskTechnicianIds[i]);
+
+          technician.tasks = technician.tasks.filter(
+            (taskId) => taskId.toString() !== task.id.toString()
+          );
+          await technician.save();
+        }
+      }
+
       if (task) {
+        // Add all references to task in User collection
+        for (let i = 0; i < args.technicians.length; i++) {
+          if (taskTechnicianIds.indexOf(args.technicians[i]) === -1) {
+            // Task technicians does not include args technician
+            const technician = await User.findById(args.technicians[i]);
+            // Remove from list
+            technician.tasks.push(task);
+            await technician.save();
+          }
+        }
+        // Assign args to task
         Object.assign(task, args);
+
+        // Add new user references to technicians
         task.save();
 
         // ? Add back authentication validation for updating tasks
@@ -133,7 +164,10 @@ export default {
         throw Error("Task with that id does not exist");
       }
 
-      return task;
+      return Task.findOne({ _id: task.id }).populate({
+        path: "technicians"
+        // select: "_id"
+      });
     },
     updateTaskOrder: async (root, { ids }, { req }) => {
       Auth.checkSignedIn(req);

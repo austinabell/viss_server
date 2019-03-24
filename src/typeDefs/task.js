@@ -21,6 +21,8 @@ export default gql`
       windowStart: String
       windowEnd: String
       duration: Int!
+      phone: String
+      email: String
       notes: String
       technicians: [ID!]
     ): Task
@@ -38,7 +40,10 @@ export default gql`
       windowStart: String
       windowEnd: String
       duration: Int
+      phone: String
+      email: String
       notes: String
+      technicians: [ID!]
     ): Task
     updateTaskOrder(ids: [ID!]!): Boolean
     deleteTask(id: ID!): Boolean
@@ -58,6 +63,8 @@ export default gql`
     windowStart: String!
     windowEnd: String!
     duration: Int!
+    phone: String
+    email: String
     notes: String
     technicians: [User!]!
     createdAt: String!

@@ -14,6 +14,8 @@ const taskSchema = new Schema(
     windowStart: Date,
     windowEnd: Date,
     duration: { type: Number, min: 0 },
+    phone: String,
+    email: String,
     notes: String,
     technicians: [
       {
