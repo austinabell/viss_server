@@ -121,30 +121,32 @@ export default {
         // select: "_id"
       });
 
-      // Map technician object array to string to match input
-      const taskTechnicianIds = task.technicians.map((tech) => tech.id);
-
-      // Remove user references to unassigned tasks
-      for (let i = 0; i < taskTechnicianIds.length; i++) {
-        if (args.technicians.indexOf(taskTechnicianIds[i]) === -1) {
-          const technician = await User.findById(taskTechnicianIds[i]);
-
-          technician.tasks = technician.tasks.filter(
-            (taskId) => taskId.toString() !== task.id.toString()
-          );
-          await technician.save();
-        }
-      }
-
       if (task) {
-        // Add all references to task in User collection
-        for (let i = 0; i < args.technicians.length; i++) {
-          if (taskTechnicianIds.indexOf(args.technicians[i]) === -1) {
-            // Task technicians does not include args technician
-            const technician = await User.findById(args.technicians[i]);
-            // Remove from list
-            technician.tasks.push(task);
-            await technician.save();
+        // Map technician object array to string to match input
+        const taskTechnicianIds = task.technicians.map((tech) => tech.id);
+
+        if (args.technicians !== undefined) {
+          // Remove user references to unassigned tasks
+          for (let i = 0; i < taskTechnicianIds.length; i++) {
+            if (args.technicians.indexOf(taskTechnicianIds[i]) === -1) {
+              const technician = await User.findById(taskTechnicianIds[i]);
+
+              technician.tasks = technician.tasks.filter(
+                (taskId) => taskId.toString() !== task.id.toString()
+              );
+              await technician.save();
+            }
+          }
+
+          // Add all references to task in User collection
+          for (let i = 0; i < args.technicians.length; i++) {
+            if (taskTechnicianIds.indexOf(args.technicians[i]) === -1) {
+              // Task technicians does not include args technician
+              const technician = await User.findById(args.technicians[i]);
+              // Remove from list
+              technician.tasks.push(task);
+              await technician.save();
+            }
           }
         }
         // Assign args to task
