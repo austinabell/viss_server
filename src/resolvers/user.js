@@ -33,6 +33,7 @@ export default {
       Auth.checkSignedOut(req);
 
       await Joi.validate(args, signUp, { abortEarly: false });
+      args.email = args.email.toLowerCase();
       const user = await User.create(args);
 
       req.session.userId = user.id;
@@ -48,6 +49,7 @@ export default {
 
       await Joi.validate(args, login, { abortEarly: false });
 
+      args.email = args.email.toLowerCase();
       const user = await Auth.attemptSignIn(args.email, args.password);
 
       req.session.userId = user.id;
@@ -87,6 +89,10 @@ export default {
         if (location) {
           user.currentLocation = location;
         }
+      }
+
+      if (args.email) {
+        args.email = args.email.toLowerCase();
       }
 
       Object.assign(user, args);
