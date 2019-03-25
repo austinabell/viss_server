@@ -3,6 +3,9 @@ import { gql } from "apollo-server-express";
 export default gql`
   extend type Query {
     myTasks(timeZone: Int): [Task!]
+    allTasks: [Task!]
+    taskById(id: ID!): Task
+    userTasks(id: ID!): [Task!]
   }
 
   extend type Mutation {
@@ -18,7 +21,10 @@ export default gql`
       windowStart: String
       windowEnd: String
       duration: Int!
+      phone: String
+      email: String
       notes: String
+      technicians: [ID!]
     ): Task
     updateTask(
       id: ID!
@@ -34,11 +40,12 @@ export default gql`
       windowStart: String
       windowEnd: String
       duration: Int
+      phone: String
+      email: String
       notes: String
+      technicians: [ID!]
     ): Task
-    updateTaskOrder(
-      ids: [ID!]!
-    ): String
+    updateTaskOrder(ids: [ID!]!): Boolean
     deleteTask(id: ID!): Boolean
   }
 
@@ -56,6 +63,8 @@ export default gql`
     windowStart: String!
     windowEnd: String!
     duration: Int!
+    phone: String
+    email: String
     notes: String
     technicians: [User!]!
     createdAt: String!

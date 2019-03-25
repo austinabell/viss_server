@@ -22,7 +22,8 @@ import {
 } from "./config";
 import mongoose from "mongoose";
 import cors from "cors";
-
+import favicon from "serve-favicon";
+import path from "path";
 import typeDefs from "./typeDefs";
 import resolvers from "./resolvers";
 
@@ -58,6 +59,7 @@ export const startServer = async () => {
   );
 
   app.disable("x-powered-by");
+  app.use(favicon(path.join(__dirname, "public", "favicon.ico")));
   app.use(logger("dev"));
   app.use(json());
   app.use(urlencoded({ extended: false }));
@@ -81,10 +83,7 @@ export const startServer = async () => {
     `mongodb://${DB_USERNAME}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}`;
 
   await mongoose
-    .connect(
-      mongoUrl,
-      { useCreateIndex: true, useNewUrlParser: true }
-    )
+    .connect(mongoUrl, { useCreateIndex: true, useNewUrlParser: true })
     .then(() => {
       app.use("/", indexRouter);
 

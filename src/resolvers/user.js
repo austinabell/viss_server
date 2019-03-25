@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 import Joi from "joi";
 
 import * as Auth from "../services/auth";
-import { User } from "../models";
+import { User, Location } from "../models";
 import { signUp, login } from "../schemas";
 
 // Cannot request tasks from any user query or mutation unless changed
@@ -14,12 +14,9 @@ export default {
 
       return User.findById(req.session.userId);
     },
-    users: (root, args, { req }) => {
-      const { userId } = req.session;
-
-      if (userId) {
-        return User.find({});
-      } else return null; // Change else return statement
+    users: async () => {
+      // ? Remember to remove this
+      return User.find({});
     },
     user: (root, { id }, { req }) => {
       Auth.checkSignedIn(req);
@@ -36,6 +33,7 @@ export default {
       Auth.checkSignedOut(req);
 
       await Joi.validate(args, signUp, { abortEarly: false });
+      args.email = args.email.toLowerCase();
       const user = await User.create(args);
 
       req.session.userId = user.id;
@@ -51,6 +49,7 @@ export default {
 
       await Joi.validate(args, login, { abortEarly: false });
 
+      args.email = args.email.toLowerCase();
       const user = await Auth.attemptSignIn(args.email, args.password);
 
       req.session.userId = user.id;
@@ -72,6 +71,34 @@ export default {
       } else {
         return false;
       }
+    },
+    updateUser: async (root, args, { req }) => {
+      Auth.checkSignedIn(req);
+
+      const { lat, lng } = args;
+
+      const user = await User.findOne({ _id: req.session.userId });
+
+      // Handle location setting
+      if (lat && lng) {
+        const location = await Location.create({
+          userId: req.session.userId,
+          lat,
+          lng
+        });
+        if (location) {
+          user.currentLocation = location;
+        }
+      }
+
+      if (args.email) {
+        args.email = args.email.toLowerCase();
+      }
+
+      Object.assign(user, args);
+      user.save();
+
+      return user;
     }
   }
 };

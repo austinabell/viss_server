@@ -8,10 +8,18 @@ export default gql`
   }
 
   extend type Mutation {
-    signUp(email: String!, password: String!): User
+    signUp(name: String, email: String!, password: String!): User
     login(email: String!, password: String!): User
     logout: Boolean
     deleteAccount: Boolean
+    updateUser(
+      email: String
+      username: String
+      name: String
+      lat: Float
+      lng: Float
+      isStarted: Boolean
+    ): User
   }
 
   type User {
@@ -27,6 +35,7 @@ export default gql`
   }
 
   type Location {
+    userId: ID!
     lng: Float
     lat: Float
     time: String

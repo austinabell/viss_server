@@ -37,8 +37,31 @@ export default {
             windowStart: {
               $lte: endOfDay.toDate()
             },
-            windowEnd: { $gte: today.toDate() },
-            options: { sort: { order: 1, isAllDay: 1, windowEnd: 1 } }
+            windowEnd: { $gte: today.toDate() }
+          },
+          options: { sort: { order: -1, isAllDay: 1, windowEnd: 1 } }
+        })
+        .exec();
+
+      if (user) {
+        return user.tasks;
+      } else {
+        return null;
+      }
+    },
+    allTasks: async () => {
+      // ? Remember to remove this
+      return Task.find({})
+        .populate({ path: "technicians" })
+        .exec();
+    },
+    userTasks: async (root, { id }) => {
+      const user = await User.findOne({ _id: id })
+        .populate({
+          path: "tasks",
+          options: { sort: { windowEnd: 1 } },
+          populate: {
+            path: "technicians"
           }
         })
         .exec();
@@ -48,7 +71,7 @@ export default {
   },
   Mutation: {
     createTask: async (root, args, { req }) => {
-      Auth.checkSignedIn(req);
+      // Auth.checkSignedIn(req); // ? add this back later
 
       // Default to current time and all day if window time isn't passed
       if (args.windowStart == null || args.windowEnd == null) {
@@ -63,22 +86,34 @@ export default {
       // Created objects here
       // const task = new Task(args);
       const task = await Task.create(args);
-      const user = await User.findById(req.session.userId);
-      if (user && task) {
-        // Push object references to each
-        user.tasks.push(task);
-        task.technicians.push(user);
-        // Save objects to database
-        await user.save();
+      if (task) {
+        const user = await User.findById(req.session.userId);
+        if (!args.technicians && user) {
+          // Push object references to each
+          user.tasks.push(task);
+          task.technicians.push(user);
+          // Save objects to database
+          await user.save();
+        } else {
+          for (let i = 0; i < args.technicians.length; i++) {
+            const technician = await User.findById(args.technicians[i]);
+            technician.tasks.push(task);
+            await technician.save();
+          }
+        }
+
         await task.save();
       } else {
         throw Error("Task could not be created");
       }
 
-      return task;
+      return Task.findOne({ _id: task.id }).populate({
+        path: "technicians"
+        // select: "_id"
+      });
     },
-    updateTask: async (root, args, { req }) => {
-      Auth.checkSignedIn(req);
+    updateTask: async (root, args) => {
+      // Auth.checkSignedIn(req); //? Add this back
 
       // Find task and join to get all technicians assigned
       const task = await Task.findOne({ _id: args.id }).populate({
@@ -87,7 +122,37 @@ export default {
       });
 
       if (task) {
+        // Map technician object array to string to match input
+        const taskTechnicianIds = task.technicians.map((tech) => tech.id);
+
+        if (args.technicians !== undefined) {
+          // Remove user references to unassigned tasks
+          for (let i = 0; i < taskTechnicianIds.length; i++) {
+            if (args.technicians.indexOf(taskTechnicianIds[i]) === -1) {
+              const technician = await User.findById(taskTechnicianIds[i]);
+
+              technician.tasks = technician.tasks.filter(
+                (taskId) => taskId.toString() !== task.id.toString()
+              );
+              await technician.save();
+            }
+          }
+
+          // Add all references to task in User collection
+          for (let i = 0; i < args.technicians.length; i++) {
+            if (taskTechnicianIds.indexOf(args.technicians[i]) === -1) {
+              // Task technicians does not include args technician
+              const technician = await User.findById(args.technicians[i]);
+              // Remove from list
+              technician.tasks.push(task);
+              await technician.save();
+            }
+          }
+        }
+        // Assign args to task
         Object.assign(task, args);
+
+        // Add new user references to technicians
         task.save();
 
         // ? Add back authentication validation for updating tasks
@@ -101,12 +166,24 @@ export default {
         throw Error("Task with that id does not exist");
       }
 
-      return task;
+      return Task.findOne({ _id: task.id }).populate({
+        path: "technicians"
+        // select: "_id"
+      });
     },
-    updateTaskOrder: async (root, args, { req }) => {
+    updateTaskOrder: async (root, { ids }, { req }) => {
       Auth.checkSignedIn(req);
 
-      return "Not implemented";
+      for (let i = 0; i < ids.length; i++) {
+        const task = await Task.findOne({ _id: ids[i] });
+
+        if (task) {
+          Object.assign(task, { order: ids.length - i });
+          task.save();
+        }
+      }
+
+      return true;
     },
     deleteTask: async (root, args, { req }) => {
       Auth.checkSignedIn(req);
