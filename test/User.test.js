@@ -16,6 +16,7 @@ describe("User model", function() {
     await startServer();
   });
 
+  const name = "Test User";
   const email = "testing12345@gmail.com";
   const password = "Testing12345";
 
@@ -26,6 +27,7 @@ describe("User model", function() {
       .send({
         query: `mutation { 
           signUp(
+            name: "${name}",
             email: "${email}", 
             password: "${password}") { 
             id, email, name 
