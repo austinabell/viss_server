@@ -67,6 +67,19 @@ export default {
         .exec();
 
       return user.tasks;
+    },
+    optimizedTasks: async (root, { ids }, { req }) => {
+      Auth.checkSignedIn(req);
+
+      const tasks = await Task.find({ _id: { $in: ids } })
+        .sort({ windowEnd: 1 })
+        .exec();
+
+      // console.log(tasks);
+
+      // Optimize task list
+
+      return tasks;
     }
   },
   Mutation: {

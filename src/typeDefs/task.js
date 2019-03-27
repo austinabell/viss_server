@@ -6,6 +6,7 @@ export default gql`
     allTasks: [Task!]
     taskById(id: ID!): Task
     userTasks(id: ID!): [Task!]
+    optimizedTasks(ids: [ID!]!): [Task!]!
   }
 
   extend type Mutation {
