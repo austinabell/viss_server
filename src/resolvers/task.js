@@ -4,6 +4,7 @@ import * as Auth from "../services/auth";
 import { User, Task } from "../models";
 import { createTask } from "../schemas";
 import moment from "moment";
+import { _ } from "underscore";
 
 export default {
   Query: {
@@ -71,15 +72,69 @@ export default {
     optimizedTasks: async (root, { ids }, { req }) => {
       Auth.checkSignedIn(req);
 
+      const now = moment().utc();
+
+      // now.add(30, "minutes");
+
+      now
+        .hour(13)
+        .minute(30)
+        .second(0)
+        .millisecond(0); // ? Remove this after testing
+
+      // Sort tasks based on finishing time
       const tasks = await Task.find({ _id: { $in: ids } })
-        .sort({ windowEnd: 1 })
+        .sort({ status: 0, isAllDay: 1, windowEnd: 1 })
         .exec();
 
-      // console.log(tasks);
+      // Separate tasks into todo and tasks that have a completion status set
+      const { todo, other } = _.groupBy(tasks, function(task) {
+        return task.status === "a" ? "todo" : "other";
+      });
 
-      // Optimize task list
+      // Group todo tasks by all day and ones with a window set
+      const { windowTasks, allDayTasks } = _.groupBy(todo, function(task) {
+        return task.isAllDay ? "allDayTasks" : "windowTasks";
+      });
 
-      return tasks;
+      // Iterate through daily task list to
+      const optimizedTasks = [];
+      while (windowTasks.length > 0 || allDayTasks.length > 0) {
+        let found = false;
+
+        // Find next available task
+        for (let i = 0; i < windowTasks.length; i++) {
+          if (
+            moment(windowTasks[i].windowStart)
+              .utc()
+              .isBefore(now)
+          ) {
+            // Remove task from list
+            optimizedTasks.push(windowTasks[i]);
+            // Increment current time to account for that task's duration
+            now.add(windowTasks[i].duration, "minutes");
+            // Remove task from list of todo tasks
+            windowTasks.splice(i, 1);
+            found = true;
+            break;
+          }
+        }
+
+        if (found === false) {
+          if (allDayTasks.length > 0) {
+            // ? find best task for all day to fit here
+            // If an all day task can be added, add that task
+            optimizedTasks.push(allDayTasks[0]);
+            allDayTasks.splice(0, 1);
+          } else {
+            // No all day tasks so push the one with earliest end window
+            optimizedTasks.push(windowTasks[0]);
+            windowTasks.splice(0, 1);
+          }
+        }
+      }
+
+      return optimizedTasks.concat(other);
     }
   },
   Mutation: {
