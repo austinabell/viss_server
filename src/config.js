@@ -9,6 +9,7 @@ export const {
   DB_PORT = 27017,
   DB_NAME = "cerf",
   SECRET,
+  MONGOLAB_URI,
 
   SESS_NAME,
   SESS_SECRET,

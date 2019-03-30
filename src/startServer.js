@@ -18,7 +18,8 @@ import {
   SESS_SECRET,
   REDIS_HOST,
   REDIS_PORT,
-  REDIS_PW
+  REDIS_PW,
+  MONGOLAB_URI
 } from "./config";
 import mongoose from "mongoose";
 import cors from "cors";
@@ -79,7 +80,7 @@ export const startServer = async () => {
   server.applyMiddleware({ app });
 
   const mongoUrl =
-    process.env.MONGOLAB_URI ||
+    MONGOLAB_URI ||
     `mongodb://${DB_USERNAME}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}`;
 
   await mongoose

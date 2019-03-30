@@ -74,6 +74,8 @@ export default {
 
       const now = moment().utc();
 
+      const windowError = 30;
+
       // now.add(30, "minutes");
 
       now
@@ -112,7 +114,7 @@ export default {
             // Remove task from list
             optimizedTasks.push(windowTasks[i]);
             // Increment current time to account for that task's duration
-            now.add(windowTasks[i].duration, "minutes");
+            now.add(windowTasks[i].duration + windowError, "minutes");
             // Remove task from list of todo tasks
             windowTasks.splice(i, 1);
             found = true;
@@ -120,14 +122,17 @@ export default {
           }
         }
 
+        // If no task with a window could be scheduled for the current time
         if (found === false) {
           if (allDayTasks.length > 0) {
             // ? find best task for all day to fit here
             // If an all day task can be added, add that task
+            now.add(allDayTasks[0].duration + windowError, "minutes");
             optimizedTasks.push(allDayTasks[0]);
             allDayTasks.splice(0, 1);
           } else {
             // No all day tasks so push the one with earliest end window
+            now.add(windowTasks[0].duration + windowError, "minutes");
             optimizedTasks.push(windowTasks[0]);
             windowTasks.splice(0, 1);
           }
