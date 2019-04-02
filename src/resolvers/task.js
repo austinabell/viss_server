@@ -54,6 +54,7 @@ export default {
       // ? Remember to remove this
       return Task.find({})
         .populate({ path: "technicians" })
+        .sort({ windowStart: 1 })
         .exec();
     },
     userTasks: async (root, { id }) => {
