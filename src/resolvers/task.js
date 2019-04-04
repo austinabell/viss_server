@@ -77,14 +77,14 @@ export default {
 
       const windowError = 30;
 
-      // now.add(30, "minutes");
+      // now
+      //   .hour(13)
+      //   .minute(0)
+      //   .second(0)
+      //   .millisecond(0); // ? Remove this after testing
 
-      now
-        .hour(13)
-        .minute(30)
-        .second(0)
-        .millisecond(0); // ? Remove this after testing
-
+      now.add(30, "minutes");
+      
       // Sort tasks based on finishing time
       const tasks = await Task.find({ _id: { $in: ids } })
         .sort({ status: 0, isAllDay: 1, windowEnd: 1 })
