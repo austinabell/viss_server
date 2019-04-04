@@ -68,6 +68,8 @@ export default gql`
     email: String
     notes: String
     technicians: [User!]!
+    startedAt: String
+    finishedAt: String
     createdAt: String!
     updatedAt: String!
   }

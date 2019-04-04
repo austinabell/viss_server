@@ -84,7 +84,7 @@ export default {
       //   .millisecond(0); // ? Remove this after testing
 
       now.add(30, "minutes");
-      
+
       // Sort tasks based on finishing time
       const tasks = await Task.find({ _id: { $in: ids } })
         .sort({ status: 0, isAllDay: 1, windowEnd: 1 })
@@ -171,8 +171,10 @@ export default {
         } else {
           for (let i = 0; i < args.technicians.length; i++) {
             const technician = await User.findById(args.technicians[i]);
-            technician.tasks.push(task);
-            await technician.save();
+            if (technician) {
+              technician.tasks.push(task);
+              await technician.save();
+            }
           }
         }
 
@@ -223,6 +225,15 @@ export default {
             }
           }
         }
+
+        if (args.status === "s") {
+          // Add timestamp for started
+          args.startedAt = moment().toISOString();
+        } else if (args.status === "f") {
+          // Add timestamp for finished
+          args.finishedAt = moment().toISOString();
+        }
+
         // Assign args to task
         Object.assign(task, args);
 
@@ -237,10 +248,10 @@ export default {
         //   } else {
         //   }
       } else {
-        throw Error("Task with that id does not exist");
+        throw Error("Task with thatG id does not exist");
       }
 
-      return Task.findOne({ _id: task.id }).populate({
+      return Task.findById(task.id).populate({
         path: "technicians"
         // select: "_id"
       });

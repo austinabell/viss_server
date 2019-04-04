@@ -13,7 +13,7 @@ export const {
 
   SESS_NAME,
   SESS_SECRET,
-  SESS_LIFETIME = 1000 * 60 * 60 * 2,
+  SESS_LIFETIME = 1000 * 60 * 60 * 24 * 30,
 
   REDIS_HOST = "localhost",
   REDIS_PORT = 6379,
