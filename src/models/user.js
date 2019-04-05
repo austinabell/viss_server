@@ -12,7 +12,7 @@ const userSchema = new Schema(
       // }
     },
     username: {
-      type: String,
+      type: String
       // unique: true
       // validate: {
       //   validator: (username) => User.doesntExist({ username }),
@@ -26,7 +26,8 @@ const userSchema = new Schema(
       }
     ],
     name: String,
-    password: String
+    password: String,
+    isStarted: { type: Boolean, default: false }
   },
   {
     timestamps: true

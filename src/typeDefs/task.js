@@ -6,6 +6,7 @@ export default gql`
     allTasks: [Task!]
     taskById(id: ID!): Task
     userTasks(id: ID!): [Task!]
+    optimizedTasks(ids: [ID!]!): [Task!]!
   }
 
   extend type Mutation {
@@ -67,6 +68,8 @@ export default gql`
     email: String
     notes: String
     technicians: [User!]!
+    startedAt: String
+    finishedAt: String
     createdAt: String!
     updatedAt: String!
   }

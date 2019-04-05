@@ -17,6 +17,8 @@ const taskSchema = new Schema(
     phone: String,
     email: String,
     notes: String,
+    startedAt: Date,
+    finishedAt: Date,
     technicians: [
       {
         type: Schema.Types.ObjectId,
