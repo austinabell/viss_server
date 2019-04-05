@@ -5,6 +5,7 @@ import { User, Task } from "../models";
 import { createTask } from "../schemas";
 import moment from "moment";
 import { _ } from "underscore";
+import { findClosestTask, findShortestTask } from "../helpers/routing";
 
 export default {
   Query: {
@@ -70,7 +71,7 @@ export default {
 
       return user.tasks;
     },
-    optimizedTasks: async (root, { ids }, { req }) => {
+    optimizedTasks: async (root, { ids, lat, lng }, { req }) => {
       Auth.checkSignedIn(req);
 
       const now = moment().utc();
@@ -87,8 +88,10 @@ export default {
 
       // Sort tasks based on finishing time
       const tasks = await Task.find({ _id: { $in: ids } })
-        .sort({ isAllDay: 1, windowEnd: 1 })
+        .sort({ windowEnd: 1 })
         .exec();
+
+      // console.log(tasks);
 
       // Separate tasks into todo and tasks that have a completion status set
       const tasksMapping = _.groupBy(tasks, function(task) {
@@ -110,14 +113,12 @@ export default {
       const optimizedTasks = [];
       while (windowTasks.length > 0 || allDayTasks.length > 0) {
         let found = false;
+        let closestStart = Number.MAX_SAFE_INTEGER;
 
         // Find next available task
         for (let i = 0; i < windowTasks.length; i++) {
-          if (
-            moment(windowTasks[i].windowStart)
-              .utc()
-              .isBefore(now)
-          ) {
+          const windowS = moment(windowTasks[i].windowStart).utc();
+          if (windowS.isBefore(now)) {
             // Remove task from list
             optimizedTasks.push(windowTasks[i]);
             // Increment current time to account for that task's duration
@@ -126,22 +127,39 @@ export default {
             windowTasks.splice(i, 1);
             found = true;
             break;
+          } else {
+            const timeToStart = now.diff(windowS, "minutes");
+            if (timeToStart < closestStart) closestStart = timeToStart;
           }
         }
 
         // If no task with a window could be scheduled for the current time
         if (found === false) {
           if (allDayTasks.length > 0) {
-            // ? find best task for all day to fit here
+            let idx = 0;
+            if (lat && lng) {
+              idx = findClosestTask(allDayTasks, lat, lng);
+            } else {
+              idx = findShortestTask(allDayTasks);
+            }
+
             // If an all day task can be added, add that task
-            now.add(allDayTasks[0].duration + windowError, "minutes");
-            optimizedTasks.push(allDayTasks[0]);
-            allDayTasks.splice(0, 1);
+            now.add(allDayTasks[idx].duration + windowError, "minutes");
+            optimizedTasks.push(allDayTasks[idx]);
+            allDayTasks.splice(idx, 1);
           } else {
             // No all day tasks so push the one with earliest end window
-            now.add(windowTasks[0].duration + windowError, "minutes");
-            optimizedTasks.push(windowTasks[0]);
-            windowTasks.splice(0, 1);
+            let idx = 0;
+            if (lat && lng) {
+              idx = findClosestTask(windowTasks, lat, lng);
+            } else {
+              idx = findShortestTask(windowTasks);
+            }
+
+            // If an all day task can be added, add that task
+            now.add(windowTasks[idx].duration + windowError, "minutes");
+            optimizedTasks.push(windowTasks[idx]);
+            windowTasks.splice(idx, 1);
           }
         }
       }
