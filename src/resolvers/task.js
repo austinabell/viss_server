@@ -87,18 +87,24 @@ export default {
 
       // Sort tasks based on finishing time
       const tasks = await Task.find({ _id: { $in: ids } })
-        .sort({ status: 0, isAllDay: 1, windowEnd: 1 })
+        .sort({ isAllDay: 1, windowEnd: 1 })
         .exec();
 
       // Separate tasks into todo and tasks that have a completion status set
-      const { todo, other } = _.groupBy(tasks, function(task) {
-        return task.status === "a" ? "todo" : "other";
+      const tasksMapping = _.groupBy(tasks, function(task) {
+        return task.status === "a" || task.status === "s" ? "todo" : "other";
       });
 
+      const todo = tasksMapping.todo || [];
+      const other = tasksMapping.other || [];
+
       // Group todo tasks by all day and ones with a window set
-      const { windowTasks, allDayTasks } = _.groupBy(todo, function(task) {
+      const todoMapping = _.groupBy(todo, function(task) {
         return task.isAllDay ? "allDayTasks" : "windowTasks";
       });
+
+      const windowTasks = todoMapping.windowTasks || [];
+      const allDayTasks = todoMapping.allDayTasks || [];
 
       // Iterate through daily task list to
       const optimizedTasks = [];
@@ -168,7 +174,7 @@ export default {
           task.technicians.push(user);
           // Save objects to database
           await user.save();
-        } else {
+        } else if (args.technicians) {
           for (let i = 0; i < args.technicians.length; i++) {
             const technician = await User.findById(args.technicians[i]);
             if (technician) {
@@ -176,6 +182,8 @@ export default {
               await technician.save();
             }
           }
+        } else {
+          throw Error("User or technicians must be valid");
         }
 
         await task.save();
