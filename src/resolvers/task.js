@@ -91,8 +91,6 @@ export default {
         .sort({ windowEnd: 1 })
         .exec();
 
-      // console.log(tasks);
-
       // Separate tasks into todo and tasks that have a completion status set
       const tasksMapping = _.groupBy(tasks, function(task) {
         return task.status === "a" || task.status === "s" ? "todo" : "other";
@@ -119,11 +117,13 @@ export default {
         for (let i = 0; i < windowTasks.length; i++) {
           const windowS = moment(windowTasks[i].windowStart).utc();
           if (windowS.isBefore(now)) {
-            // Remove task from list
-            optimizedTasks.push(windowTasks[i]);
             // Increment current time to account for that task's duration
             now.add(windowTasks[i].duration + windowError, "minutes");
+            // Add task to list to be returned
+            optimizedTasks.push(windowTasks[i]);
             // Remove task from list of todo tasks
+            lat = windowTasks[i].lat;
+            lng = windowTasks[i].lng;
             windowTasks.splice(i, 1);
             found = true;
             break;
@@ -146,6 +146,8 @@ export default {
             // If an all day task can be added, add that task
             now.add(allDayTasks[idx].duration + windowError, "minutes");
             optimizedTasks.push(allDayTasks[idx]);
+            lat = allDayTasks[idx].lat;
+            lng = allDayTasks[idx].lng;
             allDayTasks.splice(idx, 1);
           } else {
             // No all day tasks so push the one with earliest end window
@@ -159,6 +161,8 @@ export default {
             // If an all day task can be added, add that task
             now.add(windowTasks[idx].duration + windowError, "minutes");
             optimizedTasks.push(windowTasks[idx]);
+            lat = windowTasks[idx].lat;
+            lng = windowTasks[idx].lng;
             windowTasks.splice(idx, 1);
           }
         }

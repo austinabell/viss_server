@@ -1,4 +1,4 @@
-function havershineDistance(lat1, lon1, lat2, lon2) {
+function haversineDistance(lat1, lon1, lat2, lon2) {
   const dLat = ((lat2 - lat1) * Math.PI) / 180;
   const dLon = ((lon2 - lon1) * Math.PI) / 180;
   const a =
@@ -15,7 +15,7 @@ const findClosestTask = function(tasks, lat, lng) {
   let index = 0;
   let minimumDistance = Number.MAX_SAFE_INTEGER;
   for (let i = 0; i < tasks.length; i++) {
-    const distance = havershineDistance(lat, lng, tasks[i].lat, tasks[i].lng);
+    const distance = haversineDistance(lat, lng, tasks[i].lat, tasks[i].lng);
     if (distance < minimumDistance) {
       minimumDistance = distance;
       index = i;
