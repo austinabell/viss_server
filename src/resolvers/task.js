@@ -78,11 +78,11 @@ export default {
 
       const windowError = 30;
 
-      // now
-      //   .hour(13)
-      //   .minute(0)
-      //   .second(0)
-      //   .millisecond(0); // ? Remove this after testing
+      now
+        .hour(13)
+        .minute(0)
+        .second(0)
+        .millisecond(0); // ? Remove this after testing
 
       now.add(30, "minutes");
 
@@ -112,11 +112,12 @@ export default {
       while (windowTasks.length > 0 || allDayTasks.length > 0) {
         let found = false;
         let closestStart = Number.MAX_SAFE_INTEGER;
+        let closestIdx = 0;
 
         // Find next available task
         for (let i = 0; i < windowTasks.length; i++) {
           const windowS = moment(windowTasks[i].windowStart).utc();
-          if (windowS.isBefore(now)) {
+          if (windowS.isSameOrBefore(now)) {
             // Increment current time to account for that task's duration
             now.add(windowTasks[i].duration + windowError, "minutes");
             // Add task to list to be returned
@@ -128,8 +129,11 @@ export default {
             found = true;
             break;
           } else {
-            const timeToStart = now.diff(windowS, "minutes");
-            if (timeToStart < closestStart) closestStart = timeToStart;
+            const timeToStart = windowS.diff(now, "minutes");
+            if (timeToStart < closestStart) {
+              closestStart = timeToStart;
+              closestIdx = i;
+            }
           }
         }
 
@@ -150,20 +154,12 @@ export default {
             lng = allDayTasks[idx].lng;
             allDayTasks.splice(idx, 1);
           } else {
-            // No all day tasks so push the one with earliest end window
-            let idx = 0;
-            if (lat && lng) {
-              idx = findClosestTask(windowTasks, lat, lng);
-            } else {
-              idx = findShortestTask(windowTasks);
-            }
-
-            // If an all day task can be added, add that task
-            now.add(windowTasks[idx].duration + windowError, "minutes");
-            optimizedTasks.push(windowTasks[idx]);
-            lat = windowTasks[idx].lat;
-            lng = windowTasks[idx].lng;
-            windowTasks.splice(idx, 1);
+            // No all day tasks so push the one with earliest start window
+            now.add(windowTasks[closestIdx].duration + windowError, "minutes");
+            optimizedTasks.push(windowTasks[closestIdx]);
+            lat = windowTasks[closestIdx].lat;
+            lng = windowTasks[closestIdx].lng;
+            windowTasks.splice(closestIdx, 1);
           }
         }
       }
